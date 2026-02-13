@@ -151,7 +151,6 @@ export class AiWorkflowBuilderService {
 				return { tracingClient, anthropicClaude, anthropicClaudeThink, authHeaders };
 			}
 
-			// If base URL is not set, use environment variables
 			const envConfig = { apiKey: process.env.N8N_AI_ANTHROPIC_KEY ?? '' };
 			const anthropicClaude = await AiWorkflowBuilderService.getAnthropicClaudeModel(envConfig);
 			const anthropicClaudeThink =

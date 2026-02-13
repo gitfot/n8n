@@ -32,17 +32,41 @@ export const gpt52 = async (config: LLMProviderConfig) => {
 };
 
 export const anthropicClaudeSonnet45 = async (config: LLMProviderConfig) => {
+	const customModel = process.env.N8N_AI_MODEL_NAME;
+	const provider = process.env.N8N_AI_PROVIDER ?? 'anthropic';
+	const customBaseUrl = process.env.N8N_AI_ASSISTANT_BASE_URL;
+
+	// If provider is 'openai', use OpenAI-compatible protocol
+	if (provider === 'openai') {
+		const { ChatOpenAI } = await import('@langchain/openai');
+		const openaiBaseUrl = customBaseUrl?.replace(/\/+$/, '') ?? config.baseUrl;
+		return new ChatOpenAI({
+			model: customModel ?? 'claude-sonnet-4-5-20250929',
+			apiKey: config.apiKey,
+			temperature: 0,
+			maxTokens: -1,
+			configuration: {
+				baseURL: openaiBaseUrl,
+				defaultHeaders: config.headers,
+				fetchOptions: {
+					dispatcher: getProxyAgent(openaiBaseUrl ?? 'https://api.openai.com/v1'),
+				},
+			},
+		});
+	}
+
 	const { ChatAnthropic } = await import('@langchain/anthropic');
+	const baseUrl = customBaseUrl?.replace(/\/+$/, '') ?? config.baseUrl;
 	const model = new ChatAnthropic({
-		model: 'claude-sonnet-4-5-20250929',
+		model: customModel ?? 'claude-sonnet-4-5-20250929',
 		apiKey: config.apiKey,
 		temperature: 0,
 		maxTokens: MAX_OUTPUT_TOKENS,
-		anthropicApiUrl: config.baseUrl,
+		anthropicApiUrl: baseUrl,
 		clientOptions: {
 			defaultHeaders: config.headers,
 			fetchOptions: {
-				dispatcher: getProxyAgent(config.baseUrl),
+				dispatcher: getProxyAgent(baseUrl),
 			},
 		},
 	});
@@ -53,12 +77,36 @@ export const anthropicClaudeSonnet45 = async (config: LLMProviderConfig) => {
 	return model;
 };
 export const anthropicClaudeSonnet45Think = async (config: LLMProviderConfig) => {
+	const customModel = process.env.N8N_AI_MODEL_NAME;
+	const provider = process.env.N8N_AI_PROVIDER ?? 'anthropic';
+	const customBaseUrl = process.env.N8N_AI_ASSISTANT_BASE_URL;
+
+	// If provider is 'openai', use OpenAI-compatible protocol (no thinking mode)
+	if (provider === 'openai') {
+		const { ChatOpenAI } = await import('@langchain/openai');
+		const openaiBaseUrl = customBaseUrl?.replace(/\/+$/, '') ?? config.baseUrl;
+		return new ChatOpenAI({
+			model: customModel ?? 'claude-sonnet-4-5-20250929',
+			apiKey: config.apiKey,
+			temperature: 0,
+			maxTokens: -1,
+			configuration: {
+				baseURL: openaiBaseUrl,
+				defaultHeaders: config.headers,
+				fetchOptions: {
+					dispatcher: getProxyAgent(openaiBaseUrl ?? 'https://api.openai.com/v1'),
+				},
+			},
+		});
+	}
+
 	const { ChatAnthropic } = await import('@langchain/anthropic');
+	const baseUrl = customBaseUrl?.replace(/\/+$/, '') ?? config.baseUrl;
 	const model = new ChatAnthropic({
-		model: 'claude-sonnet-4-5-20250929',
+		model: customModel ?? 'claude-sonnet-4-5-20250929',
 		apiKey: config.apiKey,
 		maxTokens: MAX_OUTPUT_TOKENS,
-		anthropicApiUrl: config.baseUrl,
+		anthropicApiUrl: baseUrl,
 		thinking: {
 			budget_tokens: 10000,
 			type: 'enabled',
@@ -66,7 +114,7 @@ export const anthropicClaudeSonnet45Think = async (config: LLMProviderConfig) =>
 		clientOptions: {
 			defaultHeaders: config.headers,
 			fetchOptions: {
-				dispatcher: getProxyAgent(config.baseUrl),
+				dispatcher: getProxyAgent(baseUrl),
 			},
 		},
 	});
